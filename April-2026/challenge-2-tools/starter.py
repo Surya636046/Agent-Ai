@@ -1,85 +1,73 @@
-"""
-Challenge 2: Adding Tools to Your Agent
-Give your agent a calculator, weather tool, and age calculator.
-Model: Amazon Nova Pro via Bedrock
-
-Instructions:
-  1. Fill in the TODO sections below
-  2. Run: python starter.py
-  3. Needs AWS credentials configured (aws configure)
-"""
-
 import os
-os.environ["BYPASS_TOOL_CONSENT"] = "true"
+from datetime import datetime
 
-from datetime import date, datetime
 from strands import Agent, tool
 from strands_tools import calculator
 
+# Bypass tool consent prompt
+os.environ["BYPASS_TOOL_CONSENT"] = "true"
+
+# Amazon Bedrock Model
 MODEL = "us.amazon.nova-pro-v1:0"
 
 
-# ============================================================
-# TODO 1: Create a custom weather tool
-# ============================================================
-# Hint: Use the @tool decorator
-# The function should take a city name and return weather info
-# Use wttr.in API: https://wttr.in/{city}?format=j1
-# Or return dummy data: f"The weather in {city} is sunny, 28°C"
+# ---------------------------
+# Custom Tools
+# ---------------------------
 
-# @tool
-# def weather(city: str) -> str:
-#     """Get the current weather for a city.
-#     Args:
-#         city: The name of the city.
-#     """
-#     # TODO: Implement this function
-#     pass
+@tool
+def weather(city: str) -> str:
+    """Get weather for a city."""
+    return f"The weather in {city} is sunny, 32°C."
 
 
-# ============================================================
-# TODO 2: Create a custom age calculator tool
-# ============================================================
-# Hint: Use @tool decorator
-# Take a birth_date string in YYYY-MM-DD format
-# Calculate the age using datetime
+@tool
+def age_calculator(birth_date: str) -> str:
+    """Calculate age from YYYY-MM-DD."""
+    birth = datetime.strptime(birth_date, "%Y-%m-%d")
+    today = datetime.today()
 
-# @tool
-# def age_calculator(birth_date: str) -> str:
-#     """Calculate age from a birth date.
-#     Args:
-#         birth_date: Date of birth in YYYY-MM-DD format.
-#     """
-#     # TODO: Implement this function
-#     pass
+    age = today.year - birth.year
+
+    if (today.month, today.day) < (birth.month, birth.day):
+        age -= 1
+
+    return f"Age: {age} years"
 
 
-# ============================================================
-# TODO 3: Create an agent with all tools
-# ============================================================
-# Hint: Agent(model=MODEL, tools=[calculator, weather, age_calculator], ...)
+# ---------------------------
+# Create Agent
+# ---------------------------
 
-agent = None  # Replace this line
+agent = Agent(
+    model=MODEL,
+    tools=[calculator, weather, age_calculator],
+    system_prompt="You are a helpful assistant."
+)
 
+# ---------------------------
+# Test Calculator
+# ---------------------------
 
-# ============================================================
-# TODO 4: Test the agent with different questions
-# ============================================================
+print("\n🧮 Math Test")
+print(agent("What is 42 * 17?"))
 
-# Test math
-print("🧮 Math test:")
-# response = agent("What is 42 * 17?")
-# print(response)
+# ---------------------------
+# Test Weather Tool
+# ---------------------------
 
-# Test weather
-print("\n🌤️ Weather test:")
-# response = agent("What's the weather in Chennai?")
-# print(response)
+print("\n🌤 Weather Test")
+print(agent("What's the weather in Chennai?"))
 
-# Test age
-print("\n🎂 Age test:")
-# response = agent("How old is someone born on 2000-05-15?")
-# print(response)
+# ---------------------------
+# Test Age Calculator
+# ---------------------------
 
+print("\n🎂 Age Test")
+print(agent("How old is someone born on 2000-05-15?"))
+
+# ---------------------------
+# Completion Message
+# ---------------------------
 
 print("\n✅ Challenge 2 complete!")
